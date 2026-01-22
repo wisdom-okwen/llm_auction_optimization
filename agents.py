@@ -20,7 +20,7 @@ class Agent:
     communication_style: str = "neutral"  # "assertive", "timid", "calibrated", "neutral"
     budget: float = 1.0
     client: OpenAI = field(default_factory=OpenAI)
-    model: str = "gpt-4-turbo-preview"  # or "gpt-3.5-turbo" for faster/cheaper
+    model: str = "gpt-4-turbo-preview"
     
     # Agent state
     initial_budget: float = field(init=False)
