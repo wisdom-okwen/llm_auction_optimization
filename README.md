@@ -32,7 +32,7 @@ Agents act as advisors (clinicians, ethicists, patient advocates) with **limited
   - Autonomy vs beneficence (adult & minor cases)
   - Bias in AI systems (detection & correction)
   - Multiple-choice ethical options with ground-truth consensus
-- **N agents**: e.g., 5 LLM instances acting as advisors (clinicians, ethicists, patient advocates)
+- **N agents**: e.g., 20 LLM instances acting as advisors (clinicians, ethicists, patient advocates)
 - **Initial budget B**: e.g., $1.00 per agent (represents cognitive load / meeting time)
 - **Token price p**: e.g., $0.001/token (models communication cost in team deliberation)
 
@@ -313,7 +313,7 @@ pip install -r requirements.txt
 
 ## Team
 
-Lab Hackathon Team - 2026
+Srivastava Lab Hackathon Team - 2026
 
 ## License
 
