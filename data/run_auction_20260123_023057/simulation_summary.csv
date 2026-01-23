@@ -1,0 +1,2 @@
+n_vignettes,n_agents,avg_correctness,total_costs,total_rewards,net_rewards,efficiency,timestamp
+5,20,0.5000,5.184258,44.815742,39.631484,0.0964,20260123_023057
