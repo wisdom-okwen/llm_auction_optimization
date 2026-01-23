@@ -39,7 +39,11 @@ print("="*70)
 print("\nSTEP 1: Load Ethical Healthcare Vignettes")
 print("="*70)
 
-df_vignettes = pd.read_csv('datasets/Ethical-Reasoning-in-Mental-Health.csv')
+# Get absolute path to dataset
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(os.path.dirname(script_dir))
+dataset_path = os.path.join(project_root, 'datasets/Ethical-Reasoning-in-Mental-Health.csv')
+df_vignettes = pd.read_csv(dataset_path)
 print(f"✓ Loaded {len(df_vignettes)} ethical healthcare vignettes")
 
 # Sample 5 vignettes for testing
@@ -76,8 +80,9 @@ for style, count in agent_styles_count.items():
     print(f"  - {count:2d} {style:12s} agents")
 print(f"Mechanism: Turn-Taking (agents propose in sequence)")
 
-# Initialize data logger
-logger = SimulationLogger(data_dir="data/baselines", mechanism='baseline_turn_taking')
+# Initialize data logger with absolute path
+data_dir = os.path.join(project_root, 'data/baselines')
+logger = SimulationLogger(data_dir=data_dir, mechanism='baseline_turn_taking')
 
 # Run simulation
 print("\n" + "="*70)
@@ -89,6 +94,8 @@ config = {
     'initial_budget': 1.0,
 }
 
+all_round_results = []
+
 for round_num, vignette in enumerate(sample_vignettes, 1):
     print(f"\nRound {round_num}/{n_vignettes}: {vignette.get('subcategory', 'Unknown')}")
     
@@ -98,31 +105,12 @@ for round_num, vignette in enumerate(sample_vignettes, 1):
     
     # Run turn-taking round
     results = run_turn_taking_round(vignette, agents, config)
-    results['round_num'] = round_num
+    all_round_results.append(results)
     
     # Log results
-    logger.log_vignette_round(results)
-    
-    # Extract and log agent results
-    for agent_result in results.get('agent_results', []):
-        agent_id = agent_result.get('agent_id')
-        agent = next((a for a in agents if a.agent_id == agent_id), None)
-        if agent:
-            logger.log_agent_result(
-                round_num=round_num,
-                vignette_id=vignette.get('id'),
-                agent=agent,
-                assessment=agent_result.get('assessment'),
-                bid=0,  # No bidding in turn-taking
-                won_proposal=agent_id in results.get('proposers', []),
-                vote=agent_result.get('vote'),
-                proposal_cost=0,
-                intervention_cost=0,
-                agent_style=agent.communication_style
-            )
-    
-    # Log bids (empty for turn-taking)
-    logger.log_bids(round_num, vignette.get('id'), [])
+    logger.log_vignette_round(round_num, results)
+    logger.log_agent_results(round_num, results, agents)
+    logger.log_bids(round_num, results, agents)
     
     print(f"  ✓ Round complete - {len(results.get('proposals', []))} agents proposed in turn")
 
@@ -140,7 +128,7 @@ for agent in agents:
         'total_tokens_cost': agent.total_tokens_used * config['token_price'],
     })
 
-logger.log_agent_summary(agent_summary)
+logger.log_agent_summary(all_round_results, agents)
 
 # Log simulation summary
 simulation_summary = {
@@ -151,7 +139,7 @@ simulation_summary = {
     'using_real_agents': use_real_openai,
 }
 
-logger.log_simulation_summary(simulation_summary)
+logger.log_simulation_summary(all_round_results, agents)
 
 print(f"\n✓ Simulation complete!")
 print(f"✓ Data logged to: {logger.run_dir}")
