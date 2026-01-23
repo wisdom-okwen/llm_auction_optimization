@@ -1,4 +1,0 @@
-round_num,vignette_id,category,proposer_id,n_interventions,consensus_answer,consensus_votes,correctness,total_cost,total_reward,n_agents
-1,ethics_mh_030,Autonomy vs Beneficence (minor),agent_07,11,No consensus,20,0.5,1.041985,8.958015,20
-2,ethics_mh_067,Bias in AI (race),agent_07,9,No consensus,20,0.5,1.038583,8.961417,20
-3,ethics_mh_045,Autonomy vs Beneficence (minor),agent_05,11,No consensus,20,0.5,1.037862,8.962138,20

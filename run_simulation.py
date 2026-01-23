@@ -11,17 +11,21 @@ import random
 from collections import Counter, defaultdict
 import pandas as pd
 import numpy as np
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Add current dir to path
 sys.path.insert(0, '.')
 
 from agents import Agent, MockAgent
-from config import ExperimentConfig, AUCTION_SEALED_BID
+from config import AUCTION_SEALED_BID
 from data_logger import SimulationLogger
 
 # Check for OpenAI API key
 # Set to False to use mock agents for testing, True for real OpenAI API
-use_real_openai = 'PERSONAL_OPENAI_KEY' in os.environ and os.environ['PERSONAL_OPENAI_KEY'].startswith('sk-')
+use_real_openai = os.environ.get('PERSONAL_OPENAI_KEY', '').startswith('sk-')
 
 if use_real_openai:
     print("✓ Valid OpenAI API key detected - using real agents")
@@ -38,8 +42,8 @@ print("="*70)
 df_vignettes = pd.read_csv('Ethical-Reasoning-in-Mental-Health.csv')
 print(f"✓ Loaded {len(df_vignettes)} ethical healthcare vignettes")
 
-# Sample 3 vignettes for MVP
-n_vignettes = 3
+# Sample 5 vignettes 
+n_vignettes = 5
 sampled_indices = random.sample(range(len(df_vignettes)), n_vignettes)
 sample_vignettes = df_vignettes.iloc[sampled_indices].to_dict('records')
 
@@ -147,6 +151,7 @@ def run_auction_round(vignette, agents, config):
     print(f"    ✓ Interventions: {n_interventions} agents critiqued the proposal")
     
     # PHASE 4: VOTING
+    # PHASE 4: VOTING
     print(f"  Phase 4: Final Vote")
     options = vignette.get('options', [])
     if isinstance(options, str):
@@ -157,7 +162,10 @@ def run_auction_round(vignette, agents, config):
     
     votes = Counter()
     for agent in agents:
-        vote = agent.vote(options)
+        # Get the agent's assessment from this round
+        assessment = round_results['agents'][agent.agent_id].get('assessment', {})
+        # Vote based on their assessment
+        vote = assessment.get('option_choice', options[0] if options else "No consensus")
         votes[vote] += 1
         round_results['votes'][agent.agent_id] = vote
     

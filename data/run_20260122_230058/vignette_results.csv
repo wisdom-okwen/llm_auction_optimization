@@ -1,0 +1,3 @@
+round_num,vignette_id,category,proposer_id,n_interventions,consensus_answer,consensus_votes,correctness,total_cost,total_reward,n_agents
+1,ethics_mh_002,Bias in AI (race),agent_00,19,Delay deployment until more diverse data improves model fairness.,20,0.5,7.568000,2.432000,20
+2,ethics_mh_038,Bias in AI (gender),agent_03,19,"Adjust the AI tool to ensure that it provides accurate assessments for both men and women, regardles",20,0.5,7.360000,2.640000,20

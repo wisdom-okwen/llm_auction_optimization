@@ -4,12 +4,24 @@ LLM-based agents using OpenAI API for ethical reasoning.
 
 import json
 import re
+import os
 from typing import Optional, Dict, Any
 from dataclasses import dataclass, field
 import random
 from abc import ABC, abstractmethod
+from dotenv import load_dotenv
 
 from openai import OpenAI
+
+load_dotenv()
+
+
+def _get_openai_client():
+    """Create OpenAI client with API key from environment."""
+    api_key = os.environ.get('PERSONAL_OPENAI_KEY') or os.environ.get('OPENAI_API_KEY')
+    if not api_key:
+        raise ValueError("No OpenAI API key found in environment variables (PERSONAL_OPENAI_KEY or OPENAI_API_KEY)")
+    return OpenAI(api_key=api_key)
 
 
 @dataclass
@@ -19,7 +31,7 @@ class Agent:
     agent_id: str
     communication_style: str = "neutral"  # "assertive", "timid", "calibrated", "neutral"
     budget: float = 1.0
-    client: OpenAI = field(default_factory=OpenAI)
+    client: OpenAI = field(default_factory=_get_openai_client)
     model: str = "gpt-4-turbo-preview"
     
     # Agent state
