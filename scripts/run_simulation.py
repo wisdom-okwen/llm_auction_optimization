@@ -16,12 +16,12 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-# Add current dir to path
-sys.path.insert(0, '.')
+# Add parent dir to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from agents import Agent, MockAgent
-from config import AUCTION_SEALED_BID
-from data_logger import SimulationLogger
+from src.agents import Agent, MockAgent
+from src.config import AUCTION_SEALED_BID
+from src.data_logger import SimulationLogger
 
 # Check for OpenAI API key
 # Set to False to use mock agents for testing, True for real OpenAI API
@@ -39,7 +39,7 @@ print("\n" + "="*70)
 print("STEP 1: Load Ethical Healthcare Vignettes")
 print("="*70)
 
-df_vignettes = pd.read_csv('Ethical-Reasoning-in-Mental-Health.csv')
+df_vignettes = pd.read_csv('datasets/Ethical-Reasoning-in-Mental-Health.csv')
 print(f"✓ Loaded {len(df_vignettes)} ethical healthcare vignettes")
 
 # Sample 5 vignettes 
