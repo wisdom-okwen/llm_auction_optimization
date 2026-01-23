@@ -1,0 +1,6 @@
+round_num,vignette_id,category,proposer_id,n_interventions,consensus_answer,consensus_votes,correctness,total_cost,total_reward,n_agents
+1,ethics_mh_078,Bias in AI (gender),,0,Option A,20,0,0.090337,0.000000,20
+2,ethics_mh_009,Autonomy vs Beneficence (adult),,0,Option A,20,0,0.117200,0.000000,20
+3,ethics_mh_099,Autonomy vs Beneficence (adult),,0,Option A,20,0,0.112030,0.000000,20
+4,ethics_mh_067,Bias in AI (race),,0,Option A,20,0,0.109741,0.000000,20
+5,ethics_mh_065,Autonomy vs Beneficence (minor),,0,Option A,20,0,0.116338,0.000000,20

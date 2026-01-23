@@ -43,61 +43,70 @@ def run_free_discussion_round(vignette: Dict[str, Any], agents: List, config: Di
     - Voting at the end
     - No budget constraints or winner-take-all structure
     
-    Returns round_results dictionary for logging
+    Returns round_results dictionary matching auction format for logging
     """
+    from collections import defaultdict, Counter
+    import json
+    
     vignette_id = vignette.get('id', 'unknown')
     round_results = {
         'vignette_id': vignette_id,
-        'round_num': 0,  # Will be set by caller
-        'mechanism': 'free_discussion',
-        'proposer_id': None,  # No designated proposer
-        'proposals': [],
-        'agent_results': [],
-        'bid_data': [],
-        'correctness': 0,
-        'total_cost': 0.0,
-        'total_reward': 0.0,
+        'vignette_category': vignette.get('subcategory', ''),
+        'agents': defaultdict(dict),
+        'bids': {},
+        'proposer': None,  # No designated proposer in free discussion
+        'proposal': None,
+        'interventions': defaultdict(list),
+        'votes': defaultdict(list),
+        'costs_by_agent': defaultdict(float),
     }
     
     # PHASE 1: PRIVATE ASSESSMENT (same as auction)
     for agent in agents:
         assessment = agent.assess(vignette)
-        round_results['agent_results'].append({
-            'agent_id': agent.agent_id,
-            'style': agent.communication_style,
-            'assessment': assessment,
-            'bid': 0,  # No bidding in free discussion
-            'won_auction': False,
-            'vote': None,
-        })
+        round_results['agents'][agent.agent_id]['assessment'] = assessment
     
-    # PHASE 2: FREE DISCUSSION (all agents can contribute)
-    # Each agent proposes their view (costs tokens)
+    # PHASE 2: FREE DISCUSSION (all agents can propose)
     for agent in agents:
-        assessment = next((r['assessment'] for r in round_results['agent_results'] 
-                          if r['agent_id'] == agent.agent_id), None)
-        if assessment and assessment.get('option_choice') != 'Error: Unable to assess':
-            proposal = agent.propose(vignette, assessment)
-            round_results['proposals'].append({
-                'agent_id': agent.agent_id,
-                'proposal': proposal,
-                'cost': proposal.get('cost', 0),
-            })
+        assessment = round_results['agents'][agent.agent_id]['assessment']
+        if assessment.get('option_choice') != 'Error: Unable to assess':
+            proposal_result = agent.propose(vignette, assessment)
+            round_results['costs_by_agent'][agent.agent_id] += proposal_result['cost']
     
     # PHASE 3: VOTING (all agents vote)
-    votes = []
-    for agent in agents:
-        assessment = next((r['assessment'] for r in round_results['agent_results'] 
-                          if r['agent_id'] == agent.agent_id), None)
-        if assessment:
-            vote = assessment.get('option_choice', 'Error: Unable to assess')
-            votes.append(vote)
-            # Update agent result with vote
-            for result in round_results['agent_results']:
-                if result['agent_id'] == agent.agent_id:
-                    result['vote'] = vote
+    options = vignette.get('options', [])
+    if isinstance(options, str):
+        try:
+            options = json.loads(options)
+        except:
+            options = []
     
-    # PHASE 4: CORRECTNESS & PAYOFF
+    votes = Counter()
+    for agent in agents:
+        assessment = round_results['agents'][agent.agent_id].get('assessment', {})
+        vote = assessment.get('option_choice', options[0] if options else "No consensus")
+        votes[vote] += 1
+        round_results['votes'][agent.agent_id] = vote
+    
+    # PHASE 4: CONSENSUS & CORRECTNESS
+    consensus_answer = votes.most_common(1)[0][0] if votes else "No consensus"
+    consensus_votes = votes[consensus_answer]
+    
+    # Check correctness (from vignette correct_answer field)
+    correct_answer = vignette.get('correct_answer', '')
+    correctness = 1 if consensus_answer == correct_answer else 0
+    
+    # Calculate totals
+    total_costs = sum(round_results['costs_by_agent'].values())
+    total_rewards = len(agents) * 0.50 * correctness  # All agents get $0.50 if correct
+    
+    round_results['consensus_answer'] = consensus_answer
+    round_results['consensus_votes'] = consensus_votes
+    round_results['correctness'] = correctness
+    round_results['total_costs'] = total_costs
+    round_results['total_rewards'] = total_rewards
+    
+    return round_results
     if votes:
         # Consensus: majority vote
         vote_counts = {}
@@ -121,80 +130,76 @@ def run_free_discussion_round(vignette: Dict[str, Any], agents: List, config: Di
 def run_turn_taking_round(vignette: Dict[str, Any], agents: List, config: Dict) -> Dict[str, Any]:
     """
     Turn-Taking Mechanism:
-    - Agents take turns proposing in a fixed order
+    - Agents take turns proposing in random order
     - Each proposer can make one proposal (costs tokens)
     - All agents vote at the end
     - Equal budget for all (no auction)
     
-    Returns round_results dictionary for logging
+    Returns round_results dictionary matching auction format for logging
     """
+    from collections import defaultdict, Counter
+    import json
+    
     vignette_id = vignette.get('id', 'unknown')
     round_results = {
         'vignette_id': vignette_id,
-        'round_num': 0,  # Will be set by caller
-        'mechanism': 'turn_taking',
-        'proposers': [],  # Multiple proposers in order
-        'proposals': [],
-        'agent_results': [],
-        'bid_data': [],
-        'correctness': 0,
-        'total_cost': 0.0,
-        'total_reward': 0.0,
+        'vignette_category': vignette.get('subcategory', ''),
+        'agents': defaultdict(dict),
+        'bids': {},
+        'proposer': None,  # No single designated proposer
+        'proposal': None,
+        'interventions': defaultdict(list),
+        'votes': defaultdict(list),
+        'costs_by_agent': defaultdict(float),
     }
     
-    # PHASE 1: PRIVATE ASSESSMENT (same as auction)
-    for idx, agent in enumerate(agents):
+    # PHASE 1: PRIVATE ASSESSMENT
+    for agent in agents:
         assessment = agent.assess(vignette)
-        round_results['agent_results'].append({
-            'agent_id': agent.agent_id,
-            'style': agent.communication_style,
-            'assessment': assessment,
-            'turn_order': idx,  # Track order
-            'vote': None,
-        })
+        round_results['agents'][agent.agent_id]['assessment'] = assessment
     
     # PHASE 2: TURN-TAKING PROPOSALS
-    # Agents take turns (in random order to be fair) proposing
     agent_order = list(range(len(agents)))
     random.shuffle(agent_order)
     
     for turn, agent_idx in enumerate(agent_order):
         agent = agents[agent_idx]
-        assessment = next((r['assessment'] for r in round_results['agent_results'] 
-                          if r['agent_id'] == agent.agent_id), None)
-        if assessment and assessment.get('option_choice') != 'Error: Unable to assess':
-            proposal = agent.propose(vignette, assessment)
-            round_results['proposals'].append({
-                'turn': turn,
-                'agent_id': agent.agent_id,
-                'proposal': proposal,
-                'cost': proposal.get('cost', 0),
-            })
-            round_results['proposers'].append(agent.agent_id)
+        assessment = round_results['agents'][agent.agent_id]['assessment']
+        if assessment.get('option_choice') != 'Error: Unable to assess':
+            proposal_result = agent.propose(vignette, assessment)
+            round_results['costs_by_agent'][agent.agent_id] += proposal_result['cost']
     
     # PHASE 3: VOTING (all agents vote)
-    votes = []
+    options = vignette.get('options', [])
+    if isinstance(options, str):
+        try:
+            options = json.loads(options)
+        except:
+            options = []
+    
+    votes = Counter()
     for agent in agents:
-        assessment = next((r['assessment'] for r in round_results['agent_results'] 
-                          if r['agent_id'] == agent.agent_id), None)
-        if assessment:
-            vote = assessment.get('option_choice', 'Error: Unable to assess')
-            votes.append(vote)
-            # Update agent result with vote
-            for result in round_results['agent_results']:
-                if result['agent_id'] == agent.agent_id:
-                    result['vote'] = vote
+        assessment = round_results['agents'][agent.agent_id].get('assessment', {})
+        vote = assessment.get('option_choice', options[0] if options else "No consensus")
+        votes[vote] += 1
+        round_results['votes'][agent.agent_id] = vote
     
-    # PHASE 4: CORRECTNESS & PAYOFF
-    if votes:
-        vote_counts = {}
-        for vote in votes:
-            vote_counts[vote] = vote_counts.get(vote, 0) + 1
-        consensus_answer = max(vote_counts, key=vote_counts.get)
-    else:
-        consensus_answer = None
+    # PHASE 4: CONSENSUS & CORRECTNESS
+    consensus_answer = votes.most_common(1)[0][0] if votes else "No consensus"
+    consensus_votes = votes[consensus_answer]
     
-    # Calculate costs
-    total_cost = sum(p.get('cost', 0) for p in round_results['proposals'])
+    # Check correctness
+    correct_answer = vignette.get('correct_answer', '')
+    correctness = 1 if consensus_answer == correct_answer else 0
+    
+    # Calculate totals
+    total_costs = sum(round_results['costs_by_agent'].values())
+    total_rewards = len(agents) * 0.50 * correctness  # All agents get $0.50 if correct
+    
+    round_results['consensus_answer'] = consensus_answer
+    round_results['consensus_votes'] = consensus_votes
+    round_results['correctness'] = correctness
+    round_results['total_costs'] = total_costs
+    round_results['total_rewards'] = total_rewards
     
     return round_results
