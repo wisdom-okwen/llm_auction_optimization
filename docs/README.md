@@ -287,6 +287,33 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## Running the System
+
+**Quick Start:**
+
+```bash
+cd /playpen-ssd/wokwen/projects/llm_auction_optimization
+
+# Run main auction mechanism
+python scripts/run_simulation.py
+
+# Run baseline mechanisms for comparison
+python scripts/run_baseline_free_discussion.py    # Unstructured collaboration
+python scripts/run_baseline_turn_taking.py        # Structured turn-taking
+
+# Run all three and compare
+python scripts/run_all_baselines.py
+python scripts/analyze_baselines.py
+```
+
+**📖 For full details:** See [BASELINES.md](BASELINES.md) for comprehensive documentation of all three mechanisms, comparison methodology, and analysis examples.
+
+**Other Documentation:**
+- [QUICKSTART.md](QUICKSTART.md) - Get started in 5 minutes
+- [RUN_SIMULATION.md](RUN_SIMULATION.md) - Detailed simulation guide
+- [DESIGN.md](DESIGN.md) - Research design and hypotheses
+- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - Code architecture overview
+
 ## Next Steps
 
 1. **Define LLM backend**: OpenAI API, local models (Qwen, Llama), or mock agents for testing

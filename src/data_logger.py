@@ -15,13 +15,14 @@ import pandas as pd
 class SimulationLogger:
     """Logs simulation results to organized CSV files."""
     
-    def __init__(self, data_dir: str = "data"):
+    def __init__(self, data_dir: str = "data", mechanism: str = "auction"):
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(exist_ok=True)
         
         # Create timestamp for this run
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.run_dir = self.data_dir / f"run_{self.timestamp}"
+        self.mechanism = mechanism
+        self.run_dir = self.data_dir / f"run_{self.mechanism}_{self.timestamp}"
         self.run_dir.mkdir(exist_ok=True)
         
         # Initialize CSV files

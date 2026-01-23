@@ -78,7 +78,7 @@ for style, count in agent_styles_count.items():
 print(f"Using: {'Real OpenAI API' if use_real_openai else 'Mock agents (no API calls)'}")
 
 # Initialize data logger
-logger = SimulationLogger(data_dir="data")
+logger = SimulationLogger(data_dir="data", mechanism="auction")
 
 # Define auction mechanism
 def run_sealed_bid_auction(bids):
