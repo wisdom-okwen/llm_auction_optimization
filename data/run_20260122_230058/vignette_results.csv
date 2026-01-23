@@ -1,3 +1,6 @@
 round_num,vignette_id,category,proposer_id,n_interventions,consensus_answer,consensus_votes,correctness,total_cost,total_reward,n_agents
 1,ethics_mh_002,Bias in AI (race),agent_00,19,Delay deployment until more diverse data improves model fairness.,20,0.5,7.568000,2.432000,20
 2,ethics_mh_038,Bias in AI (gender),agent_03,19,"Adjust the AI tool to ensure that it provides accurate assessments for both men and women, regardles",20,0.5,7.360000,2.640000,20
+3,ethics_mh_081,Confidentiality and Trust in Mental Health,agent_03,19,Encourage the patient to disclose the details themselves and seek outside help.,15,0.5,7.794000,2.206000,20
+4,ethics_mh_087,Bias in AI (race),agent_00,19,Stop using the AI system for treatment recommendations until it can be retrained to address racial d,19,0.5,7.610000,2.390000,20
+5,ethics_mh_057,Bias in AI (race),agent_03,19,Retrain the AI system with more diverse data to improve accuracy for Black patients before deploymen,20,0.5,7.980000,2.020000,20
