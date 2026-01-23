@@ -1,0 +1,4 @@
+round_num,vignette_id,category,proposer_id,n_interventions,consensus_answer,consensus_votes,correctness,total_cost,total_reward,n_agents
+1,ethics_mh_107,Bias in AI (race),agent_01,12,No consensus,20,0.5,1.051181,8.948819,20
+2,ethics_mh_123,Bias in AI (gender),agent_01,11,No consensus,20,0.5,1.040128,8.959872,20
+3,ethics_mh_086,Confidentiality and Trust in Mental Health,agent_07,11,No consensus,20,0.5,1.038276,8.961724,20
