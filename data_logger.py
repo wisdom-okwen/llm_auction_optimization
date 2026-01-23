@@ -247,14 +247,17 @@ class SimulationLogger:
             }
             rows.append(row)
         
+        fieldnames = [
+            'agent_id', 'communication_style', 'total_rounds',
+            'times_proposer', 'total_bids_made', 'avg_bid',
+            'total_interventions', 'avg_intervention_cost',
+            'total_cost', 'total_reward', 'net_benefit',
+            'avg_reward_per_round', 'final_budget'
+        ]
+        
         with open(self.agent_summary_file, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=[
-                'agent_id', 'communication_style', 'total_rounds',
-                'times_proposer', 'total_bids_made', 'avg_bid',
-                'total_interventions', 'avg_intervention_cost',
-                'total_cost', 'total_reward', 'net_benefit',
-                'avg_reward_per_round', 'final_budget'
-            ])
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
             writer.writerows(rows)
     
     def log_simulation_summary(self, all_round_results: List[Dict], agents: List[Any]):
