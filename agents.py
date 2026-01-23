@@ -266,9 +266,12 @@ Be constructive but direct. Only write the critique itself, nothing else."""
         """
         # For now, vote for own assessment if we have one
         # In full implementation, could re-query LLM for final vote
+        if not options:
+            return "No consensus"
         latest_assessment = next(iter(self.assessments.values()), None)
         if latest_assessment:
-            return latest_assessment.get("option_choice", options[0])
+            choice = latest_assessment.get("option_choice", "")
+            return choice if choice else options[0]
         return options[0]
     
     def _format_options(self, options: list) -> str:
